@@ -1,7 +1,6 @@
 """
 Client and server using classes
 """
-
 import logging
 import socket
 
@@ -52,7 +51,7 @@ class Client:
         self.sock.connect((const_cs.HOST, const_cs.PORT))
         self.logger.info("Client connected to socket " + str(self.sock))
 
-    def call(self, msg_in="Hello, world"):
+    def call(self, msg_in="Bums"):
         """ Call server """
         self.sock.send(msg_in.encode('ascii'))  # send encoded string as data
         data = self.sock.recv(1024)  # receive the response
