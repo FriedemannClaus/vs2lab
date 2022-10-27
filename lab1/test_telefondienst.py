@@ -25,12 +25,12 @@ class TestEchoService(unittest.TestCase):
         self.client = telefondienst.Client()  # create new client for each test
 
     def test_srv_get(self):  # each test_* function is a test
-        """Test simple get"""
+        """Test get"""
         msg = self.client.get("Sascha")
         self.assertEqual(msg, '063412299')
 
     def test_srv_getall(self):
-        """Test simple get"""
+        """Test get all"""
         msg = self.client.getall()
         telefonbuch = {
         "Sascha": "063412299",
@@ -39,6 +39,11 @@ class TestEchoService(unittest.TestCase):
         "Bob" :"063412296"
         }
         self.assertEqual(msg, telefonbuch)
+
+    def test_srv_getnotexist(self):  # each test_* function is a test
+        """Test get name doesnt exit"""
+        msg = self.client.get("Peter")
+        self.assertEqual(msg, 'name does not exist.')
 
     def tearDown(self):
         self.client.close()  # terminate client after each test

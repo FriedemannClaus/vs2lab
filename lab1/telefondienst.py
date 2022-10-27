@@ -52,13 +52,18 @@ class Server:
                         else:
                             connection.send("name does not exist.".encode('ascii'))
                     else:
-                        connection.send("request must start with GET or GETALL".encode('ascii'))  # return sent data plus an "*"
+                        connection.send("request must start with GET or GETALL".encode('ascii'))
                 connection.close()  # close the connection
             except socket.timeout:
                 pass  # ignore timeouts
         self.sock.close()
         self._logger.info("Server down.")
 
+    def close(self):
+        """ Close socket """
+        _serving = False
+        #self.sock.close()
+        self._logger.info("Server down.")
 
 class Client:
     """ The client """
