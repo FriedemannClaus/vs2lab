@@ -43,10 +43,12 @@ class Server:
                     if not data:
                         break  # stop if client stopped
                     if data.startswith("GETALL"):
+                        self._logger.info("Server received GETALL request")
                         connection.send(json.dumps(self.telefonbuch).encode('ascii'))
-                    elif data.startswith("GET"):
-                        if data[3:] in self.telefonbuch:
-                            connection.send(self.telefonbuch.get(data[3:]).encode('ascii'))
+                    elif data.startswith("GET "):
+                        self._logger.info("Server received GET request for " + data[4:])
+                        if data[4:] in self.telefonbuch:
+                            connection.send(self.telefonbuch.get(data[4:]).encode('ascii'))
                         else:
                             connection.send("name does not exist.".encode('ascii'))
                     else:
@@ -73,13 +75,11 @@ class Client:
         response = json.loads(self.sock.recv(1024).decode('ascii'))
         for keys,values in response.items():
             print(keys + ": " + values)
-        #print(response)
         return response
 
     def get(self, key):
         """ get server """
-        #print(key)
-        self.sock.send(("GET" + key).encode('ascii'))  # send encoded string as data
+        self.sock.send(("GET " + key).encode('ascii'))  # send encoded string as data
         response = self.sock.recv(1024).decode('ascii')  # receive the response and decode
         print(key + ": " + response)
         return response
@@ -87,3 +87,4 @@ class Client:
     def close(self):
         """ Close socket """
         self.sock.close()
+        self.logger.info("Client down.")
