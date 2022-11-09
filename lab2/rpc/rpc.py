@@ -14,29 +14,29 @@ class DBList:
         self.value = self.value + [data]
         return self
 
+
 class Client(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.chan = lab_channel.Channel()
         self.client = self.chan.join('client')
         self.server = None
+        self.chan.bind(self.client)
+        self.server = self.chan.subgroup('server')
         self.result_list = []
 
     def run(self):
-        self.chan.bind(self.client)
-        self.server = self.chan.subgroup('server')
-        print("Thread waiting for response")
-        msgrcv = self.chan.receive_from(self.server)  # wait for response / final result
-        result_list = msgrcv[1]
-        print("Result: {}".format(result_list.value))
+        print("thread started: waiting for response")
+        msgrcv = self.chan.receive_from(self.server)  # wait for response
+        self.result_list = msgrcv[1]
+        print("thread done: response received")
 
     def stop(self):
         self.chan.leave('client')
 
     def call_back_func(self, abc):
         """callbackfunction"""
-        print("callback: bums" + abc)
-        #print("Result: {}".format(abc.value))
+        print("Result: {}".format(abc.value))
         return
 
     def append(self, data, db_list, callback):
@@ -45,19 +45,18 @@ class Client(threading.Thread):
         self.chan.send_to(self.server, msglst)  # send msg to server
         print("Client waiting for ack")
         reqack = self.chan.receive_from(self.server)  # wait for ack
-        print (reqack[1])
-        print("reqack ende")
         if reqack[1] == "ack":
             print("Client received ack")
             self.start() # start thread
-            #msgrcv = self.chan.receive_from(self.server)  # wait for response / final result
-            print("antwort erhalten")
+            time.sleep(3)
             print("Client macht irgendwas")
+            time.sleep(5)
             print("Client macht immer noch irgendwas")
+            time.sleep(5)
+            print("Client tut immer noch als würde er was machen")
             #return msgrcv[1]  # pass it to caller
             self.join()  # Wait for the background task to finish
-            #callback(msgrcv[1])
-            callback("bums")
+            callback(self.result_list)
 
 class Server:
     def __init__(self):
