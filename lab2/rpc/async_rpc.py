@@ -34,7 +34,7 @@ class Client():
         self.chan.send_to(self.server, msglst)  # send the message to the server
         self._logger.info("Sent the request to the server.")
         reply = None
-        while reply == None or len(reply) < 2 or reply[1] != "ACK":
+        while reply == None or reply[1] != "ACK":
             reply = self.chan.receive_from(self.server)
         self._logger.info("The server acknowledged the request.")
         self.receiverThread = self.ReceiverThread(self, callback)
