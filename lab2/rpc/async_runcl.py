@@ -1,6 +1,7 @@
+import logging
+
 import async_rpc as rpc
 from context import lab_logging
-import logging
 
 lab_logging.setup(stream_level=logging.INFO)
 
@@ -12,10 +13,9 @@ cl.run()
 
 base_list = rpc.DBList({'foo'})
 cl.append("bar", base_list, callback)
-cl.printMsgs()
+cl.work_on_other_stuff()
 
-cl.thread.join()
+cl.receiverThread.join()
 
 print("\nClient process finished")
-
 cl.stop()

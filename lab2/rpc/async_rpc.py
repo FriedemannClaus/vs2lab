@@ -34,16 +34,17 @@ class Client():
         self.chan.send_to(self.server, msglst)  # send the message to the server
         self._logger.info("Sent the request to the server.")
         reply = None
-        while reply[1] != "ACK":
+        while reply == None or len(reply) < 2 or reply[1] != "ACK":
             reply = self.chan.receive_from(self.server)
         self._logger.info("The server acknowledged the request.")
         self.receiverThread = self.ReceiverThread(self, callback)
         self.receiverThread.start()
 
-    def printMsgs(self):
+    def work_on_other_stuff(self):
         # client is still active and does not block
+        print("While waiting, the client still works on")
         for i in range(1, 10):
-            print("Client is still working on work " + str(i))
+            print("other work Nr.: " + str(i) + " and")
             time.sleep(1)
 
     class ReceiverThread(threading.Thread):
