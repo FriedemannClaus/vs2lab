@@ -73,15 +73,15 @@ class Server:
         self.chan.bind(self.server)
         while True:
             msgreq = self.chan.receive_from_any(
-                self.timeout)  # wait for any request
+                self.timeout)  # wait for requests
             if msgreq is not None:
                 client = msgreq[0]  # see who is the caller
                 msgrpc = msgreq[1]  # fetch call & parameters
                 # check what is being requested
                 if constRPC.APPEND == msgrpc[0]:
                     self.chan.send_to({client}, "ACK")  # send ACK
-                    result = self.append(msgrpc[1], msgrpc[2])  # do local call
-                    time.sleep(10.0)  # simulate 10 sec working time
-                    self.chan.send_to({client}, result)  # return response
+                    result = self.append(msgrpc[1], msgrpc[2])  # append
+                    time.sleep(10.0)  # "work" for 10 seconds
+                    self.chan.send_to({client}, result)  # send the response
                 else:
                     pass  # unsupported request, simply ignore
