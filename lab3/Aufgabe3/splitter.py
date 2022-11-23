@@ -23,8 +23,8 @@ class Splitter(threading.Thread):
 
         for x in Lines:
             print("string:" + x[:-1])
-            self.push_socket.send(pickle.dumps((1,x))) # send workload to worker
+            self.push_socket.send(pickle.dumps(("splitter",x))) # send workload to mapper
 
         # tell mappers to exit infinity loop
         for x in range(3):
-            self.push_socket.send(pickle.dumps((1, b"abort")))
+            self.push_socket.send(pickle.dumps(("splitter", b"abort")))

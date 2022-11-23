@@ -45,7 +45,7 @@ class Mapper(threading.Thread):
                 self.push_socket2.send(pickle.dumps((self.me, b"abort")))
                 break
 
-            print("{} received workload {} from {}".format(self.me, work[1], work[0]))
+            print("mapper {} received workload {} from {}".format(self.me, work[1], work[0]))
             string = work[1]
             replace_signs = ',.!?'
             for i in replace_signs:
@@ -55,7 +55,7 @@ class Mapper(threading.Thread):
             for word in words:
                 if re.search("^[a-mA-M]", word) is not None:
                     #print("word:" + word + " String startet mit <=M")
-                    self.push_socket1.send(pickle.dumps((1,word)))  # send word to reducer
+                    self.push_socket1.send(pickle.dumps((self.me,word)))  # send word to reducer
                 else:
                     #print("word:" + word +  "string startet mit >M" )
-                    self.push_socket2.send(pickle.dumps((1,word))) # send word to reducer
+                    self.push_socket2.send(pickle.dumps((self.me,word))) # send word to reducer

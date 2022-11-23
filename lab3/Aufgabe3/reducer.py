@@ -5,7 +5,7 @@ import threading
 import constpipe
 import zmq
 
-class Reducer(threading.Thread):
+class Reducer(threading.Thread):    
     def __init__(self, me):
         threading.Thread.__init__(self)
         self.me = me
@@ -46,5 +46,5 @@ class Reducer(threading.Thread):
                     self.dictionary[work[1]] = 1
                 else:
                     self.dictionary[work[1]] += 1
-                print("Reducer {} received word: {} count {} current Total-wordcount: {}"
-                .format(self.me, work[1], self.dictionary[work[1]],self.counter))
+                print("Reducer {} received from mapper {} word: {} count {} current Total-wordcount: {}"
+                .format(self.me, work[0], work[1], self.dictionary[work[1]],self.counter))
