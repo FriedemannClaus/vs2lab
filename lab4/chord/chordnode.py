@@ -50,7 +50,7 @@ class ChordNode:
             return lower_bound <= key < upper_bound
         else:
             return (lower_bound <= key < upper_bound + self.MAXPROC) or (
-                    lower_bound <= key + self.MAXPROC and key < upper_bound)
+                lower_bound <= key + self.MAXPROC and key < upper_bound)
 
     def add_node(self, node_id) -> None:
         """
@@ -80,22 +80,28 @@ class ChordNode:
         :param i: row of finger table
         :return: node for i'th row of finger table or None if unknown
         """
-        succ = (self.node_id + pow(2, i - 1)) % self.MAXPROC  # initialize succ(p+2^(i-1)), start with address offset
-        lwbi = self.node_list.index(self.node_id)  # initialize lower segment bound as own index in node set (p)
-        upbi = (lwbi + 1) % len(self.node_list)  # initialize upper segment bound as index of next neighbor
+        succ = (self.node_id + pow(2, i - 1)
+                ) % self.MAXPROC  # initialize succ(p+2^(i-1)), start with address offset
+        # initialize lower segment bound as own index in node set (p)
+        lwbi = self.node_list.index(self.node_id)
+        # initialize upper segment bound as index of next neighbor
+        upbi = (lwbi + 1) % len(self.node_list)
 
         for _ in range(len(self.node_list)):  # go through all segments of known nodes
             if self.in_between(succ, self.node_list[lwbi] + 1, self.node_list[upbi] + 1):
                 return self.node_list[upbi]  # found successor
-            (lwbi, upbi) = (upbi, (upbi + 1) % len(self.node_list))  # go to next segment
+            (lwbi, upbi) = (upbi, (upbi + 1) %
+                            len(self.node_list))  # go to next segment
 
     def recompute_finger_table(self) -> None:
         """
         Trigger re-computation of finger table from known nodes
         :return: None
         """
-        self.finger_table[0] = self.node_list[self.node_list.index(self.node_id) - 1]  # Predecessor
-        self.finger_table[1:] = [self.finger(i) for i in range(1, self.n_bits + 1)]  # Successors
+        self.finger_table[0] = self.node_list[self.node_list.index(
+            self.node_id) - 1]  # Predecessor
+        self.finger_table[1:] = [self.finger(i) for i in range(
+            1, self.n_bits + 1)]  # Successors
 
     def local_successor_node(self, key) -> int:
         """
@@ -105,14 +111,16 @@ class ChordNode:
         """
         if self.in_between(key, self.finger_table[0] + 1, self.node_id + 1):  # key in (FT[0],self]
             return self.node_id  # node is responsible
-        elif self.in_between(key, self.node_id + 1, self.finger_table[1]):  # key in (self,FT[1]]
+        # key in (self,FT[1]]
+        elif self.in_between(key, self.node_id + 1, self.finger_table[1]):
             return self.finger_table[1]  # successor responsible
         for i in range(1, self.n_bits):  # go through rest of FT
-            if self.in_between(key, self.finger_table[i], self.finger_table[(i + 1) ]):
+            if self.in_between(key, self.finger_table[i], self.finger_table[(i + 1)]):
                 return self.finger_table[i]  # key in [FT[i],FT[i+1])
-        if self.in_between(key, self.finger_table[-1], self.finger_table[0] + 1): # key outside FT
+        # key outside FT
+        if self.in_between(key, self.finger_table[-1], self.finger_table[0] + 1):
             return self.finger_table[-1]  # key in [FT[-1],FT[0]]
-        assert False # we cannot be here
+        assert False  # we cannot be here
 
     def enter(self):
         self.channel.bind(str(self.node_id))  # bind current pid
@@ -120,7 +128,8 @@ class ChordNode:
 
         # Initialize the node
         # Get all nodes from channel for bootstrapping
-        nodes = {node.decode() for node in self.channel.channel.smembers('node')}
+        nodes = {node.decode()
+                 for node in self.channel.channel.smembers('node')}
         others = list(nodes - {str(self.node_id)})
         for other_node in others:  # for all other ring nodes
             # register current ring locally (might change later)
@@ -150,9 +159,16 @@ class ChordNode:
                 self.logger.info("Node {:04n} received LOOKUP {:04n} from {:04n}."
                                  .format(self.node_id, int(request[1]), int(sender)))
 
-                # look up and return local successor 
+                # look up and return local successor
                 next_id: int = self.local_successor_node(request[1])
-                self.channel.send_to([sender], (constChord.LOOKUP_REP, next_id))
+
+                # Rekursionsabbruch
+                if next_id == self.node_id:
+                    self.channel.send_to([request[2]], (constChord.LOOKUP_REP, next_id))
+
+                # Rekursionsbedingung
+                else:
+                    self.channel.send_to([str(next_id)], (constChord.LOOKUP_REQ, request[1], request[2]))
 
                 # Finally do a sanity check
                 if not self.channel.exists(next_id):  # probe for existence
