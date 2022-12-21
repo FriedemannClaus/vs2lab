@@ -2,7 +2,7 @@ import logging
 import random
 import time
 
-from constMutex import ENTER, RELEASE, ALLOW
+from constMutex import ENTER, RELEASE, ALLOW, IGNORE
 
 
 class Process:
@@ -58,6 +58,11 @@ class Process:
                     break
 
     def __request_to_enter(self):
+        # manage missing allows by process id
+        self.missingAllowByProcess = self.other_processes.copy()
+        self.timedOut = False
+        # print("init: current queue of " + str(self.process_id) + ": " + str(self.missingAllowByProcess))
+
         self.clock = self.clock + 1  # Increment clock value
         request_msg = (self.clock, self.process_id, ENTER)
         self.queue.append(request_msg)  # Append request to queue
@@ -91,7 +96,7 @@ class Process:
 
     def __receive(self):
          # Pick up any message
-        _receive = self.channel.receive_from(self.other_processes, 10) 
+        _receive = self.channel.receive_from(self.other_processes, 10)
         if _receive:
             msg = _receive[1]
 
@@ -110,14 +115,27 @@ class Process:
                 self.__allow_to_enter(msg[1])
             elif msg[2] == ALLOW:
                 self.queue.append(msg)  # Append an ALLOW
+                # print("allow to " + str(self.process_id) + " from " + str(msg[1]))
+                # remove sender's process id
+                if str(msg[1]) in self.missingAllowByProcess:
+                    self.missingAllowByProcess.remove(str(msg[1]))
+
             elif msg[2] == RELEASE:
                 # assure release requester indeed has access (his ENTER is first in queue)
                 assert self.queue[0][1] == msg[1] and self.queue[0][2] == ENTER, 'State error: inconsistent remote RELEASE'
                 del (self.queue[0])  # Just remove first message
 
+            elif msg[2] == IGNORE:
+                self.logger.info("{} received 'ignore' from {}.".format(self.__mapid(), self.__mapid(msg[1])))
+                if msg[3] in self.other_processes:
+                    self.ignore(msg[3])
+
             self.__cleanup_queue()  # Finally sort and cleanup the queue
-        else:        
+
+        else:
             self.logger.warning("{} timed out on RECEIVE.".format(self.__mapid()))
+            self.timedOut = True
+            # print("timedOut: queue from " + str(self.process_id) + ": " + str(self.missingAllowByProcess))
 
     def init(self):
         self.channel.bind(self.process_id)
@@ -145,6 +163,18 @@ class Process:
                 while not self.__allowed_to_enter():
                     self.__receive()
 
+                    # time out occured in __receive() method
+                    if self.timedOut:
+                        # try to identify terminated process
+                        if len(self.missingAllowByProcess) == 1:
+                            self.logger.info("{} detected breakdown of {}.".format(self.__mapid(), self.__mapid(self.missingAllowByProcess[0])))
+
+                            # notify all other running processes
+                            self.clock += 1
+                            self.channel.send_to(self.other_processes, (self.clock, self.process_id, IGNORE, self.missingAllowByProcess[0]))  # Send ignore message
+
+                            self.ignore(self.missingAllowByProcess[0])
+
                 # Stay in CS for some time ...
                 sleep_time = random.randint(0, 2000)
                 self.logger.debug("{} enters CS for {} milliseconds."
@@ -160,3 +190,25 @@ class Process:
             # Occasionally serve requests to enter (
             if random.choice([True, False]):
                 self.__receive()
+
+    def ignore(self, process):
+        self.logger.info("{} now ignores {}.".format(self.__mapid(), self.__mapid(process)))
+
+        # remove process from process lists
+        # print("ignore: current queue of " + str(self.process_id) + ": " + str(self.missingAllowByProcess))
+        self.all_processes.remove(process)
+        self.other_processes.remove(process)
+        #  print("ignore: other queue of " + str(self.process_id) + ": " + str(self.other_processes))
+                            
+        # delete previously sent messages of the crashed process
+        for msg in self.queue:
+            if msg[1] == process:
+                self.queue.remove(msg)
+
+        # print("ignore: message queue of " + str(self.process_id) + ": " + str(self.queue))
+
+        # remove process from waiting list, if it is contained
+        if process in self.missingAllowByProcess:
+            self.missingAllowByProcess.remove(process)
+
+        self.timedOut = False
