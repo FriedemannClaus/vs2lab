@@ -193,6 +193,7 @@ class Process:
 
     def ignore(self, process):
         self.logger.info("{} now ignores {}.".format(self.__mapid(), self.__mapid(process)))
+        self.logger.info("missing table: {}".format(str(self.missingAllowByProcess)))
 
         # remove process from process lists
         # print("ignore: current queue of " + str(self.process_id) + ": " + str(self.missingAllowByProcess))
@@ -211,4 +212,4 @@ class Process:
         if process in self.missingAllowByProcess:
             self.missingAllowByProcess.remove(process)
 
-        self.timedOut = False
+        #self.timedOut = False
