@@ -22,7 +22,7 @@ class Splitter(threading.Thread):
         Lines = file.readlines()
 
         for x in Lines:
-            print("string:" + x[:-1])
+            #print("string:" + x[:-1])
             self.push_socket.send(pickle.dumps(("splitter",x))) # send workload to mapper
 
         # tell mappers to exit infinity loop

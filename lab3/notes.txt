@@ -1,0 +1,26 @@
+vs2 lab3
+
+experiment 1
+teil 1:
+client schickt 3 mal eine request und wartet dann jeweils bis er 
+eine response erhält bevor er weiter macht. Server hängt ein * an die nachricht an.
+teil 2:
+gleiches spiel bloß mit zwei clients. hier wird erst der eine 
+und dann der andere client vollständig abgearbeitet
+wer zuerst dran kommt ist zufällig
+
+experiment 2
+teil 1: 2 clients subscriben to TIME und der server pusht 
+jeweile die akutelle zeit an die Clients.
+teil 2:
+client subscribe zu time und wartet auf 5 pushes
+client1 zu Date und hier nur 3 pushes
+server pusht jeweils die infos an die clients wobei 
+
+experiment 3
+teil 1:
+1 worker 2 pusher und die 2 pusher pushen jeweilers 100 random 
+numbers an den worker der dann eine ausgabe erzeugt
+teil 2:
+2 worker 1 pusher beide worker erhalten jeweils 100 random numbers
+und erzeugen eine ausgabe

@@ -34,9 +34,9 @@ class Client(threading.Thread):
     def stop(self):
         self.chan.leave('client')
 
-    def call_back_func(self, abc):
+    def call_back_func(self, res):
         """callbackfunction"""
-        print("Result: {}".format(abc.value))
+        print("Result: {}".format(res.value))
         return
 
     def append(self, data, db_list, callback):
@@ -54,7 +54,6 @@ class Client(threading.Thread):
             print("Client macht immer noch irgendwas")
             time.sleep(5)
             print("Client tut immer noch als würde er was machen")
-            #return msgrcv[1]  # pass it to caller
             self.join()  # Wait for the background task to finish
             callback(self.result_list)
 

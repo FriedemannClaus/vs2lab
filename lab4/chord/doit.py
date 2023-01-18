@@ -14,6 +14,7 @@ import multiprocessing as mp
 import chordnode as chord_node
 import constChord
 from context import lab_channel, lab_logging
+import random
 
 lab_logging.setup(stream_level=logging.INFO)
 
@@ -29,7 +30,16 @@ class DummyChordClient:
         self.channel.bind(self.node_id)
 
     def run(self):
-        print("Implement me pls...")
+        key = random.randint(0, 2**self.channel.n_bits - 1)
+        node = random.choice(list(self.channel.channel.smembers('node'))).decode()
+        print("Zufälliger Schlüssel/Key: " + str(key),
+              "Zufälliger Startknoten: " + str(node))
+        print("node_id des Clients: "+str(self.node_id))
+        self.channel.send_to([node], [constChord.LOOKUP_REQ, key, self.node_id])
+        message = self.channel.receive_from_any()  # Empfange die Loesung/Antwort
+        solution = message[1]  # Extrahiere daraus die eigentliche Loesung
+        print("Der zuständige Koten ist: " + str(solution[1]))
+
         self.channel.send_to(  # a final multicast
             {i.decode() for i in list(self.channel.channel.smembers('node'))},
             constChord.STOP)

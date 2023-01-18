@@ -228,7 +228,7 @@ Nach dem Zeitpunkt des Koordinatorausfalls unterscheidet man drei Fälle.
    - Ein Teilnehmer `P_k` wird als neuer Koordinator bestimmt und terminiert die globale Transaktion.
 
 Die Terminierung der globalen Transaktion erfolgt durch einen neuen Koordinator.
-Ein Teilnehmer `P_k` übernimmt diese Rolle, der in Zustand `WAIT`, `PRECOMMIT`,
+Ein Teilnehmer `P_k` übernimmt diese Rolle, der in Zustand `READY`, `PRECOMMIT`,
 `COMMIT` oder `ABORT` sein kann (je nach seinem vorherigen Zustand als
 Teilnehmer).
 
@@ -237,7 +237,7 @@ dies, ansonsten schließen sie zum Zustand von `P_k` auf (d.h. sie wechseln in
 den jeweils korrespondierenden Zustand eines Teilnehmers) und senden
 entsprechende Nachrichten an `P_k`. Dann verfährt `P_k` wie folgt:
 
-- **Fall 1:** `P_k` ist in Zustand `WAIT`.
+- **Fall 1:** `P_k` ist in Zustand `READY`.
   - Alle Teilnehmer sind im Zustand `INIT`, `READY`, `ABORT` oder `PRECOMMIT`.
   - `P_k` betritt Zustand `ABORT` und sendet `GLOBAL_ABORT` an alle `P_i`.
   - `P_i` in Zustand `PRECOMMIT` dürfen (nur) bei Terminierung in Zustand `ABORT` wechseln.

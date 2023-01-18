@@ -42,9 +42,11 @@ class Reducer(threading.Thread):
                     break
             else:
                 self.counter += 1
+                
                 if work[1] not in self.dictionary:
                     self.dictionary[work[1]] = 1
                 else:
                     self.dictionary[work[1]] += 1
+                    
                 print("Reducer {} received from mapper {} word: {} count {} current Total-wordcount: {}"
                 .format(self.me, work[0], work[1], self.dictionary[work[1]],self.counter))

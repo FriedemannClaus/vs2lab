@@ -45,7 +45,7 @@ class Mapper(threading.Thread):
                 self.push_socket2.send(pickle.dumps((self.me, b"abort")))
                 break
 
-            print("mapper {} received workload {} from {}".format(self.me, work[1], work[0]))
+            print("mapper {} received workload: {} from: {}".format(self.me, work[1], work[0]))
             string = work[1]
             replace_signs = ',.!?'
             for i in replace_signs:
