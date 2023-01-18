@@ -75,13 +75,10 @@ class Participant:
                         # we already made our vote but the new coordinator asks for the decision again
                         if self.state in ('READY', 'PRECOMMIT', 'COMMIT'):
                             self.channel.send_to(self.coordinator, VOTE_COMMIT)
-                        else:
+                        else:   # abort state                
                             self.channel.send_to(self.coordinator, VOTE_ABORT)
                 elif msg[1] == PREPARE_COMMIT:
-                    if self.state == 'READY':
-                        self.channel.send_to(self.coordinator, READY_COMMIT)
-                        self._enter_state('PRECOMMIT')
-                    elif self.state in ('PRECOMMIT','COMMIT'):
+                    if self.state in ('READY','PRECOMMIT'):
                         # if coordinatror crashed in precommit and all local decisions are success
                         self._enter_state('PRECOMMIT')
                         self.channel.send_to(self.coordinator, READY_COMMIT)
@@ -163,7 +160,7 @@ class Participant:
                     assert msg[1] == READY_COMMIT
                     yet_to_receive.remove(msg[0])
                 else:
-                    return "timeout while new coordinator was waiting for ready_commit msg"              
+                    return "timeout while new coordinator was waiting for ready_commit msg"
             self.channel.send_to(participants, GLOBAL_COMMIT)
             self._enter_state('COMMIT')
         if self.state == 'ABORT':
